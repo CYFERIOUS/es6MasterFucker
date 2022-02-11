@@ -1,6 +1,12 @@
+alert("popo");
+/*const circle = {
+	radius: 1,
+	location: 
+};*/
+
 class App {
 	constructor(){
-		console.info('app initialized fothermuckers');
+		console.info('app initialized scumbags yeah!');
 	}
 }
 

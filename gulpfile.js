@@ -15,12 +15,17 @@ const replace = require('gulp-replace');
 const sass = require('gulp-sass')(require('sass'));
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
+var glob = require("glob")
+const es = require('event-stream');
+
 
 //file path variables
 const files = {
-	scssPath: 'src/scss/**/*.scss', 
-	jsE6Path: './src/js/index.js'
+	scssPath: './src/scss/**/*.scss', 
+	jsE6Path: './src/js/**/*.js'
 };
+
+
 
 //sass-task 
 
@@ -30,30 +35,40 @@ function scssTask(argument) {
 		  .pipe(sass())
 		  .pipe(postcss([ autoprefixer(),cssnano() ]))
 		  .pipe(sourcemaps.write('.'))
-		  .pipe(dest('dist/css/'));
+		  .pipe(dest('dist/css/'))
+		  .pipe(browsersync.stream());
 	
 }
 
 //jsE6-task
 function jsE6Task(done){
-	var b = browserify({
-    entries: files.jsE6Path,
-    debug: true,
-    transform: [babelify.configure({ presets: ['@babel/preset-env']})]
-    });
+	
+glob(files.jsE6Path, function(err, files) {
+        if(err) done(err);
+		var b = files.map(function(entry) { 
+			return browserify({
+	    		entries: entry,
+	    		debug: true,
+	    		transform: [babelify.configure({ presets: ['@babel/preset-env']})]
+	    	}).bundle()
+	    	.pipe(source(entry))
+	    	.pipe(rename(function(path){
+	    	 path.dirname = path.dirname.replace('src/', '');
+	     	 }))
+	    	.pipe(rename({extname: '.min.js'}))
+	    	.pipe(buffer())
+	    	.pipe(sourcemaps.init({loadMaps: true}))
+	    	.pipe(uglify())
+	    	.pipe(sourcemaps.write('./'))
+	    	.pipe(dest('dist/'))
+	    	.pipe(browsersync.stream());
+	    });
 
-	return b
-    .bundle()
-    .pipe(source(files.jsE6Path))
-    .pipe(rename(function(path){
-    	 path.dirname = path.dirname.replace('src/', '');
-    }))
-    .pipe(rename({extname: '.min.js'}))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(uglify())
-    .pipe(sourcemaps.write('./'))
-    .pipe(dest('dist/'));
+      es.merge(b).on('end', done);
+    });
+	
+    
+   
     done();
 }
 
@@ -64,7 +79,6 @@ function cacheBustTask(){
 			.pipe(replace(/cb=\d+/g,'cb=' + cbString))
 			.pipe(dest('./dist'));
 }
-
 
 
 //browsersync-tasks
@@ -79,10 +93,13 @@ function browsersyncServe(cb){
 }
 
 
+
 //watch task
 function watchTask() {
+	
 	watch([files.scssPath, files.jsE6Path], 
 	parallel(scssTask,jsE6Task));
+
 }
 
 //default task
