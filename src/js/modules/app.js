@@ -1,8 +1,3 @@
-alert("popo");
-/*const circle = {
-	radius: 1,
-	location: 
-};*/
 
 class App {
 	constructor(){

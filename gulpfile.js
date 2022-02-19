@@ -43,32 +43,28 @@ function scssTask(argument) {
 //jsE6-task
 function jsE6Task(done){
 	
-glob(files.jsE6Path, function(err, files) {
-        if(err) done(err);
-		var b = files.map(function(entry) { 
-			return browserify({
-	    		entries: entry,
-	    		debug: true,
-	    		transform: [babelify.configure({ presets: ['@babel/preset-env']})]
-	    	}).bundle()
-	    	.pipe(source(entry))
-	    	.pipe(rename(function(path){
-	    	 path.dirname = path.dirname.replace('src/', '');
-	     	 }))
-	    	.pipe(rename({extname: '.min.js'}))
-	    	.pipe(buffer())
-	    	.pipe(sourcemaps.init({loadMaps: true}))
-	    	.pipe(uglify())
-	    	.pipe(sourcemaps.write('./'))
-	    	.pipe(dest('dist/'))
-	    	.pipe(browsersync.stream());
-	    });
+	glob(files.jsE6Path, function(err, files) {
+	        if(err) done(err);
+			var b = files.map(function(entry) { 
+				return browserify({
+		    		entries: entry,
+		    		debug: true,
+		    		transform: [babelify.configure({ presets: ['@babel/preset-env']})]
+		    	}).bundle()
+		    	.pipe(source(entry))
+		    	.pipe(rename(function(path){
+		    	 	path.dirname = path.dirname.replace('src/', '');
+		     	 })).pipe(rename({extname: '.min.js'}))
+		    	.pipe(buffer())
+		    	.pipe(sourcemaps.init({loadMaps: true}))
+		    	.pipe(uglify())
+		    	.pipe(sourcemaps.write('./'))
+		    	.pipe(dest('dist/'))
+		    	.pipe(browsersync.stream());
+		    });
 
-      es.merge(b).on('end', done);
-    });
-	
-    
-   
+	      	es.merge(b).on('end', done);
+	});
     done();
 }
 

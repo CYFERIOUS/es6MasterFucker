@@ -4,6 +4,7 @@
   "description": "my plan to domain the world",
   "main": "index.js",
   "scripts": {
+    "start": "gulp",
     "test": "tuste"
   },
   "keywords": [
@@ -15,6 +16,7 @@
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.16.12",
+    "@babel/plugin-transform-template-literals": "^7.16.7",
     "@babel/preset-env": "^7.16.11",
     "autoprefixer": "^10.4.2",
     "babelify": "^10.0.0",
