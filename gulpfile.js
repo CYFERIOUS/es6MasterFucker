@@ -19,12 +19,20 @@ var glob = require("glob")
 const es = require('event-stream');
 
 
+
 //file path variables
 const files = {
 	scssPath: './src/scss/**/*.scss', 
 	jsE6Path: './src/js/**/*.js'
 };
 
+
+///errorlog task
+
+function handleError (err) {
+  console.log(err.toString())
+  process.exit(-1)
+}
 
 
 //sass-task 
@@ -36,7 +44,8 @@ function scssTask(argument) {
 		  .pipe(postcss([ autoprefixer(),cssnano() ]))
 		  .pipe(sourcemaps.write('.'))
 		  .pipe(dest('dist/css/'))
-		  .pipe(browsersync.stream());
+		  .pipe(browsersync.stream())
+		  .on('error', handleError);
 	
 }
 
@@ -60,7 +69,8 @@ function jsE6Task(done){
 		    	.pipe(uglify())
 		    	.pipe(sourcemaps.write('./'))
 		    	.pipe(dest('dist/'))
-		    	.pipe(browsersync.stream());
+		    	.pipe(browsersync.stream())
+		    	.on('error', handleError);
 		    });
 
 	      	es.merge(b).on('end', done);
@@ -73,7 +83,8 @@ const cbString = new Date().getTime();
 function cacheBustTask(){
 	return src(['./src/index.html'])
 			.pipe(replace(/cb=\d+/g,'cb=' + cbString))
-			.pipe(dest('./dist'));
+			.pipe(dest('./dist'))
+			.on('error', handleError);
 }
 
 
@@ -94,7 +105,7 @@ function browsersyncServe(cb){
 function watchTask() {
 	
 	watch([files.scssPath, files.jsE6Path], 
-	parallel(scssTask,jsE6Task));
+	parallel(scssTask,jsE6Task)).on('error', handleError);
 
 }
 
